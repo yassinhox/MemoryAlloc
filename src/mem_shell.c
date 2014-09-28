@@ -6,10 +6,20 @@
 
 #define SIZE_BUFFER 128
 
-void aide(void){
+void aide(void)
+{
+	printf("--------------------------------------------------");
+	printf(" Welcom to the memory allocator's user guide ! \n");
+	printf(" Press a to allocate a memory\n");
+	printf(" Press f to free the memory\n");
+	printf(" Press p to all blocks\n");
+	printf(" Press h for help\n");
+	printf(" Press q to quit the program\n");
+	printf("--------------------------------------------------");
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
 	char buffer[SIZE_BUFFER];
 	char commande;
 	char *adresse;
@@ -19,11 +29,13 @@ int main(int argc, char *argv[]) {
 	aide();
 	memory_init();
 
-	while (1) {
+	while (1) 
+	{
 		printf("? ");
 		fflush(stdout);
 		commande = getchar();
-		switch (commande) {
+		switch (commande) 
+		{
 		case 'a':
 		  scanf ("%d",&taille);
 		  adresse = memory_alloc(taille);
@@ -32,17 +44,22 @@ int main(int argc, char *argv[]) {
 		  else
 		    printf("Memory allocated at %d\n", (int) (adresse-heap_base()));
 		  break;
+		  
 		case 'f': 
 		  scanf ("%d",&offset);
 		  memory_free(heap_base()+offset);
+		  
 		case 'p':
 		  print_free_blocks();
 		  break;
+		  
 		case 'h':
 			aide();
 			break;
+			
 		case 'q':
 			exit(0);
+			
 		default:
 			fprintf(stderr,"Command not found !\n");
 		}

@@ -15,7 +15,8 @@ void leaking_fun(int n) {
   if(!leaking || (n%2)==0) free(b);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
   if(argc>1) 
     leaking = 0;
   else 
