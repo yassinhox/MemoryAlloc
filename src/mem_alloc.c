@@ -101,39 +101,38 @@ void memory_free(char *p)
 				
 				if ( block ==  (busy_block_t)next_free - (block->size))  // next free block is Contigious
 				{
-					
-					
+					free_block_t tmp = malloc(sizeof(free_block_s));
+					tmp->size = next_free->size + block->size;
+					tmp->next = next_free->next;
+					tmp->before = previous_free;
+					free(next_free);
+					previous_free->next = tmp;
+					free(block);					
 				} 
 				else    												 // previous is not contiguous and the next one is not 
 				{
-					previous_free->size += block->size;
-					free(block);
+					free_block_t tmp = malloc(sizeof(free_block_s));
+					tmp->size = block->size;
+					tmp->next = previous_free->next;
+					tmp->before = previous_free;
+					previous_free->next = tmp;
+					free(block);					
 				}	
 			}
 			
 			else (next_free == NULL)  						// There is no next free block 
 			{
-				previous_free->size += block->size;
+				free_block_t tmp = mall(sizeof(free_block_s));
+				tmp->size = block->size;
+				tmp->next = NULL;
+				tmp->before = previous_free;
+				previous_free->next = tmp;
 				free(block);
 			}
 			
 		}
-		
-		
-		
-		
-		
-		
 	}
 	else                                                             //  There is not previous free block
-	{
-		
-	}
-	
-	{
-		
-	}
-	
 	{
 		
 	}
