@@ -132,8 +132,56 @@ void memory_free(char *p)
 			
 		}
 	}
-	else                                                             //  There is not previous free block
+	else                                                             //  There is not previous free block 
 	{
+		if ( block ==  (busy_block_t)first_free - (block->size))  // If the first free block after our block is Contigious
+		{
+			
+			if ( block == (busy_block_t) memory)     // and the busy block is the first block in the memory
+			{
+					free_block_t temp = malloc(sizeof(free_block_s));
+					temp->size=block->size+first_free->size;
+					temp->next=first_free;
+					free(first_free);  // Because we want to have on Contigious free block
+					first_free=temp;
+					free(block);								
+				
+			}
+			else
+			{	
+				free_block_t temp = malloc(sizeof(free_block_s));
+					temp->size=block->size+first_free->size;
+					temp->next=first_free;
+					free(first_free);  // Because we want to have on Contigious free block
+					first_free=temp;
+					free(block);
+					
+				
+			}
+		}
+		else
+		{
+			if (block= (busy_block_t)memory)   // The block is the first block of the memory and there is no Contigious free block
+			{
+				free_block_t temp = malloc(sizeof(free_block_s));
+				temp->size= block->size;
+				temp->next=first_free;
+				first_free=temp;
+				free(block);
+			}
+			
+			else 
+			{
+				free_block_t temp = malloc(sizeof(free_block_s));
+				temp->size=block->size;
+				temp->next=first_free;
+				free(block);
+				first_free=temp;
+				
+			}
+			
+			
+		}
 		
 	}
 
