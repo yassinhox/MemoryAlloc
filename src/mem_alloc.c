@@ -6,19 +6,6 @@
 /* memory */
 char memory[MEMORY_SIZE]; 
 
-/* Structure declaration for a free block */
-typedef struct free_block{
-  int size; 
-  struct free_block *next;
-  struct free_block *before;
-} free_block_s, *free_block_t; 
-
-/* Structure declaration for an occupied block */
-typedef struct busy_block{
-  int size;
-  struct busy_block *next;
-} busy_block_s, *busy_block_t; 
-
 
 /* Pointer to the first free block in the memory */
 free_block_t first_free; 
@@ -63,18 +50,16 @@ void memory_free(char *p)
 	{
 		free_block_t previous_free = getPreviousFreeBlock((busy_block_t)p);
 		free_block_t next_free= previous_free->next;
+		busy_block_t block = (busy_block_t) p;
 		
 		if ( previous_free + previous_free->size == (free_block_t)p) // The previous free block is Contiguous
 		{
-			
-			busy_block_t block = (busy_block_t) p;
 			if( next_free != NULL)                                   // There exist a next free block
 			{
 				if ( block ==  (busy_block_t)next_free - (block->size))  // Previous block and the next one are Contiguous A
 				{
 					
 					previous_free->size += block->size+next_free->size;
-					free_block_t temp = next_free;
 					previous_free->next=next_free->next;
 					free(block);
 					free(next_free);
@@ -86,7 +71,7 @@ void memory_free(char *p)
 					free(block);
 				}	
 			}		
-			else (next_free == NULL)  						// Previous is contiguous but there is no next free block 
+			else if(next_free == NULL)  						// Previous is contiguous but there is no next free block 
 			{
 				previous_free->size += block->size;
 				free(block);
@@ -95,10 +80,7 @@ void memory_free(char *p)
 		else                                         // The previous block is not contigious
 		{
 			if( next_free != NULL)  // There is a next free block
-			{
-				
-				busy_block_t block = (busy_block_t) p;
-				
+			{				
 				if ( block ==  (busy_block_t)next_free - (block->size))  // next free block is Contigious
 				{
 					free_block_t tmp = malloc(sizeof(free_block_s));
@@ -120,9 +102,9 @@ void memory_free(char *p)
 				}	
 			}
 			
-			else (next_free == NULL)  						// There is no next free block 
+			else if(next_free == NULL)  						// There is no next free block 
 			{
-				free_block_t tmp = mall(sizeof(free_block_s));
+				free_block_t tmp = malloc(sizeof(free_block_s));
 				tmp->size = block->size;
 				tmp->next = NULL;
 				tmp->before = previous_free;
@@ -134,6 +116,7 @@ void memory_free(char *p)
 	}
 	else                                                             //  There is not previous free block 
 	{
+		busy_block_t block = (busy_block_t) p;
 		if ( block ==  (busy_block_t)first_free - (block->size))  // If the first free block after our block is Contigious
 		{
 			
@@ -150,18 +133,16 @@ void memory_free(char *p)
 			else
 			{	
 				free_block_t temp = malloc(sizeof(free_block_s));
-					temp->size=block->size+first_free->size;
-					temp->next=first_free;
-					free(first_free);  // Because we want to have on Contigious free block
-					first_free=temp;
-					free(block);
-					
-				
+				temp->size=block->size+first_free->size;
+				temp->next=first_free;
+				free(first_free);  // Because we want to have on Contigious free block
+				first_free=temp;
+				free(block);
 			}
 		}
 		else
 		{
-			if (block= (busy_block_t)memory)   // The block is the first block of the memory and there is no Contigious free block
+			if (block == (busy_block_t)memory)   // The block is the first block of the memory and there is no Contigious free block
 			{
 				free_block_t temp = malloc(sizeof(free_block_s));
 				temp->size= block->size;
@@ -188,7 +169,7 @@ void memory_free(char *p)
   /* ... */
 }
 
-void validAdress(char *p)
+int validAdress(char *p)
 {
 	busy_block_t current_busy = first_occupied;
 	
