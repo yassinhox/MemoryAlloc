@@ -10,7 +10,8 @@ char memory[MEMORY_SIZE];
 typedef struct free_block{
   int size; 
   struct free_block *next; 
-  struct free_block *before; 
+  struct free_block *before;
+  struct free_block *test_only;  
 } free_block_s, *free_block_t; 
 
 /* Structure declaration for an occupied block */
