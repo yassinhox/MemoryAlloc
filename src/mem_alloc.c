@@ -59,11 +59,82 @@ void memory_free(char *p)
 	{
 		printf("Invalid adress !\n");
 	}
-	else
+	else if ( first_free < (free_block_t)p)   // This means that there is a free block before the busy block we are trying to free 
+	{
+		free_block_t previous_free = getPreviousFreeBlock((busy_block_t)p);
+		free_block_t next_free= previous_free->next;
+		
+		if ( previous_free + previous_free->size == (free_block_t)p) // The previous free block is Contiguous
+		{
+			
+			busy_block_t block = (busy_block_t) p;
+			if( next_free != NULL)                                   // There exist a next free block
+			{
+				if ( block ==  (busy_block_t)next_free - (block->size))  // Previous block and the next one are Contiguous A
+				{
+					
+					previous_free->size += block->size+next_free->size;
+					free_block_t temp = next_free;
+					previous_free->next=next_free->next;
+					free(block);
+					free(next_free);
+					
+				} 
+				else    												 // previous is Contiguous but the next one is not  D
+				{
+					previous_free->size += block->size;
+					free(block);
+				}	
+			}		
+			else (next_free == NULL)  						// Previous is contiguous but there is no next free block 
+			{
+				previous_free->size += block->size;
+				free(block);
+			}
+		}
+		else                                         // The previous block is not contigious
+		{
+			if( next_free != NULL)  // There is a next free block
+			{
+				
+				busy_block_t block = (busy_block_t) p;
+				
+				if ( block ==  (busy_block_t)next_free - (block->size))  // next free block is Contigious
+				{
+					
+					
+				} 
+				else    												 // previous is not contiguous and the next one is not 
+				{
+					previous_free->size += block->size;
+					free(block);
+				}	
+			}
+			
+			else (next_free == NULL)  						// There is no next free block 
+			{
+				previous_free->size += block->size;
+				free(block);
+			}
+			
+		}
+		
+		
+		
+		
+		
+		
+	}
+	else                                                             //  There is not previous free block
 	{
 		
+	}
+	
+	{
 		
-		
+	}
+	
+	{
 		
 	}
 
@@ -96,6 +167,11 @@ void validAdress(char *p)
 free_block_t getPreviousFreeBlock(busy_block_t block)
 {
 	free_block_t result = first_free;
+	
+	if( (free_block_t) block < first_free)
+	{
+		return NULL;
+	} 
 	
 	while(result < (free_block_t) memory + MEMORY_SIZE)
 	{
