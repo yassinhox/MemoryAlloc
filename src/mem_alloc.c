@@ -4,7 +4,6 @@
 #include <string.h>
 
 /* memory */
-# define MEMORY_SIZE = 512
 char memory[MEMORY_SIZE]; 
 
 /* Structure declaration for a free block */
@@ -35,12 +34,12 @@ free_block_t first_free;
 void memory_init(void)
 {
 	int *temp_ptr = (int*)memory;
-	free_block Block;
-	Block.size=512-4;
-	Block.next=null;
-	Block.before=null;
-	*temp_ptr=Block.size; // as an interger is saved into 4 bytes
-	free_block_t=memory;
+	first_free = malloc (sizeof(free_block_s));
+	first_free->size = 512-4;
+	first_free->next = NULL ; 
+	first_free->before = NULL ;
+	*temp_ptr = first_free->size; // as an interger is saved into 4 bytes
+	first_free = (free_block_t )memory;
 	
 }
 
@@ -56,15 +55,18 @@ char *memory_alloc(int size)
 		busy_block_s Block;
 		Block.size=size;
 		int *temp_ptr = (int*)memory;
+		*temp_ptr=Block.size;
+		temp_ptr=free_block_t;
+		*temp_ptr=512-8;	
 			
 	}
 		
-  print_alloc_info(addr, actual_size); 
+//  print_alloc_info(addr, actual_size); 
 }
 
 void memory_free(char *p)
 {
-  print_free_info(p); 
+  //print_free_info(p); 
 
   /* ... */
 }
