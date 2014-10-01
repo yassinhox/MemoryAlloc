@@ -32,6 +32,7 @@ void memory_init(void)
 {
 	int *temp_ptr = (int*)memory;
 	*temp_ptr=MEMORY_SIZE;
+	free_block_t=memory;
 	
 }
 
