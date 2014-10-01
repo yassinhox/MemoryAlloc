@@ -9,22 +9,20 @@ char memory[MEMORY_SIZE];
 /* Structure declaration for a free block */
 typedef struct free_block{
   int size; 
-  struct free_block *next; 
-<<<<<<< HEAD
-  struct free_block *before; 
-=======
+  struct free_block *next;
   struct free_block *before;
->>>>>>> 45213a8d4c1627edbb5327004a060aad08d4c17d
 } free_block_s, *free_block_t; 
 
 /* Structure declaration for an occupied block */
-typedef struct{
-  int size; 
+typedef struct busy_block{
+  int size;
+  struct busy_block *next;
 } busy_block_s, *busy_block_t; 
 
 
 /* Pointer to the first free block in the memory */
 free_block_t first_free; 
+busy_block_t first_occupied;
 
 
 #define ULONG(x)((long unsigned int)(x))
@@ -34,6 +32,7 @@ free_block_t first_free;
 void memory_init(void)
 {
 	int *temp_ptr = (int*)memory;
+	
 	first_free = malloc (sizeof(free_block_s));
 	first_free->size = 512-4;
 	first_free->next = NULL ; 
@@ -41,36 +40,90 @@ void memory_init(void)
 	*temp_ptr = first_free->size; // as an interger is saved into 4 bytes
 	first_free = (free_block_t )memory;
 	
+	first_occupied = NULL;
+	
 }
 
-char *memory_alloc(int size)
-{
-	if (size>512)
-	{
-          //error as the size must be smaller than 512
-	}
-  if (free_block_t==memory)
-	{
-		free_block_t=size+4;
-		busy_block_s Block;
-		Block.size=size;
-		int *temp_ptr = (int*)memory;
-		*temp_ptr=Block.size;
-		temp_ptr=free_block_t;
-		*temp_ptr=512-8;	
-			
-	}
-		
-//  print_alloc_info(addr, actual_size); 
-}
+//~ char *memory_alloc(int size)
+//~ {
+		//~ 
+//~ //  print_alloc_info(addr, actual_size);
+ //~ 
+//~ }
 
 void memory_free(char *p)
 {
-  //print_free_info(p); 
+	//print_free_info(p); 
+	
+	if (validAdress(p) == 0)
+	{
+		printf("Invalid adress !\n");
+	}
+	else
+	{
+		
+		
+		
+		
+	}
 
   /* ... */
 }
 
+void validAdress(char *p)
+{
+	busy_block_t current_busy = first_occupied;
+	
+	if( (busy_block_t) p < first_occupied)
+	{
+		return 0;
+	}
+	
+	while( current_busy < (busy_block_t) memory + MEMORY_SIZE)
+	{
+		if( current_busy == (busy_block_t) p)
+		{
+			return 1;
+		}
+		else
+		{
+			current_busy = current_busy->next;
+		}
+	}
+	return 1;
+}
+
+free_block_t getPreviousFreeBlock(busy_block_t block)
+{
+	free_block_t result = first_free;
+	
+	while(result < (free_block_t) memory + MEMORY_SIZE)
+	{
+		if( result > (free_block_t) block )
+		{
+			break;
+		}
+		else
+		{
+			result = result->next;
+		}
+	}
+	
+	result = result->before;
+	return result;	
+}
+
+int contiguous(free_block_t current, busy_block_t block)
+{
+	if( (current + current->size) == (free_block_t) block )
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}	
+}
 
 void print_info(void) 
 {
@@ -106,46 +159,46 @@ void print_free_blocks(void)
   for(current = first_free; current != NULL; current = current->next)
     fprintf(stderr, "Free block at address %lu, size %u\n", ULONG((char*)current - memory), current->size);
 }
+//~ 
+//~ char *heap_base(void) 
+//~ {
+  //~ return memory;
+//~ }
+//~ 
+//~ 
+//~ void *malloc(size_t size)
+//~ {
+  //~ static int init_flag = 0; 
+  //~ if(!init_flag)
+  //~ {
+    //~ init_flag = 1; 
+    //~ memory_init(); 
+    //~ //print_info(); 
+  //~ }      
+  //~ return (void*)memory_alloc((size_t)size); 
+//~ }
 
-char *heap_base(void) 
-{
-  return memory;
-}
+//~ void free(void *p)
+//~ {
+  //~ if (p == NULL) return;
+  //~ memory_free((char*)p); 
+  //~ print_free_blocks();
+//~ }
 
-
-void *malloc(size_t size)
-{
-  static int init_flag = 0; 
-  if(!init_flag)
-  {
-    init_flag = 1; 
-    memory_init(); 
-    //print_info(); 
-  }      
-  return (void*)memory_alloc((size_t)size); 
-}
-
-void free(void *p)
-{
-  if (p == NULL) return;
-  memory_free((char*)p); 
-  print_free_blocks();
-}
-
-void *realloc(void *ptr, size_t size)
-{
-  if(ptr == NULL)
-    return memory_alloc(size); 
-  busy_block_t bb = ((busy_block_t)ptr) - 1; 
-  printf("Reallocating %d bytes to %d\n", bb->size - (int)sizeof(busy_block_s), (int)size); 
-  if(size <= bb->size - sizeof(busy_block_s))
-    return ptr; 
-
-  char *new = memory_alloc(size); 
-  memcpy(new, (void*)(bb+1), bb->size - sizeof(busy_block_s) ); 
-  memory_free((char*)(bb+1)); 
-  return (void*)(new); 
-}
+//~ void *realloc(void *ptr, size_t size)
+//~ {
+  //~ if(ptr == NULL)
+    //~ return memory_alloc(size); 
+  //~ busy_block_t bb = ((busy_block_t)ptr) - 1; 
+  //~ printf("Reallocating %d bytes to %d\n", bb->size - (int)sizeof(busy_block_s), (int)size); 
+  //~ if(size <= bb->size - sizeof(busy_block_s))
+    //~ return ptr; 
+//~ 
+  //~ char *new = memory_alloc(size); 
+  //~ memcpy(new, (void*)(bb+1), bb->size - sizeof(busy_block_s) ); 
+  //~ memory_free((char*)(bb+1)); 
+  //~ return (void*)(new); 
+//~ }
 
 
 #ifdef MAIN
@@ -153,33 +206,30 @@ int main(int argc, char **argv)
 {
 
   /* The main can be changed, it is *not* involved in tests */
-  memory_init();
-  print_info(); 
-  print_free_blocks();
-  int i ; 
-  for( i = 0; i < 10; i++)
-  {
-    char *b = memory_alloc(rand()%8);
-    memory_free(b); 
-    print_free_blocks();
-  }
-
-
-
-
-  char * a = memory_alloc(15);
-  a=realloc(a, 20); 
-  memory_free(a);
-
-
-  a = memory_alloc(10);
-  memory_free(a);
-
-  printf("%lu\n",(long unsigned int) (memory_alloc(9)));
-  return EXIT_SUCCESS;
+  //~ memory_init();
+  //~ print_info(); 
+  //~ print_free_blocks();
+  //~ int i ; 
+  //~ for( i = 0; i < 10; i++)
+  //~ {
+    //~ char *b = memory_alloc(rand()%8);
+    //~ memory_free(b); 
+    //~ print_free_blocks();
+  //~ }
+//~ 
+//~ 
+//~ 
+//~ 
+  //~ char * a = memory_alloc(15);
+  //~ a=realloc(a, 20); 
+  //~ memory_free(a);
+//~ 
+//~ 
+  //~ a = memory_alloc(10);
+  //~ memory_free(a);
+//~ 
+  //~ printf("%lu\n",(long unsigned int) (memory_alloc(9)));
+  return 1;
+  //~ return EXIT_SUCCESS;
 }
 #endif 
-
-
-
-int* tp = malloc(5*sizeof(int));
