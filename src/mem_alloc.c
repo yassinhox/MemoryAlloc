@@ -31,16 +31,30 @@ free_block_t first_free;
 void memory_init(void)
 {
 	int *temp_ptr = (int*)memory;
-	*temp_ptr=MEMORY_SIZE;
+	free_block Block;
+	Block.size=512-4;
+	Block.next=null;
+	Block.before=null;
+	*temp_ptr=Block.size; // as an interger is saved into 4 bytes
 	free_block_t=memory;
 	
 }
 
 char *memory_alloc(int size)
 {
-  
-  /* ... */
-
+	if (size>512)
+	{
+          //error as the size must be smaller than 512
+	}
+  if (free_block_t==memory)
+	{
+		free_block_t=size+4;
+		busy_block_s Block;
+		Block.size=size;
+		int *temp_ptr = (int*)memory;
+			
+	}
+		
   print_alloc_info(addr, actual_size); 
 }
 

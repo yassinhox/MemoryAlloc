@@ -31,15 +31,25 @@ free_block_t first_free;
 void memory_init(void)
 {
 	int *temp_ptr = (int*)memory;
-	*temp_ptr=MEMORY_SIZE;
+	free_block Block1;
+	Block1.size=512;
+	*temp_ptr=MEMORY_SIZE-4; // as an interger is saved into 4 bytes
+	free_block_t=memory;
 	
 }
 
 char *memory_alloc(int size)
 {
-  
-  /* ... */
-
+	if (size>512)
+	{
+          //error
+	}
+  if (free_block_t==memory)
+	{
+		int *temp_ptr = (int*)memory;
+			
+	}
+		
   print_alloc_info(addr, actual_size); 
 }
 
