@@ -52,6 +52,9 @@ char *memory_alloc(int size)
 		busy_block_s Block;
 		Block.size=size;
 		int *temp_ptr = (int*)memory;
+		*temp_ptr=Block.size;
+		temp_ptr=free_block_t;
+		*temp_ptr=512-8;	
 			
 	}
 		
