@@ -4,6 +4,7 @@
 #include <string.h>
 
 /* memory */
+# define MEMORY_SIZE = 512
 char memory[MEMORY_SIZE]; 
 
 /* Structure declaration for a free block */
@@ -29,7 +30,9 @@ free_block_t first_free;
 
 void memory_init(void)
 {
-  /* ... */
+	int *temp_ptr = (int*)memory;
+	*temp_ptr=MEMORY_SIZE;
+	
 }
 
 char *memory_alloc(int size)

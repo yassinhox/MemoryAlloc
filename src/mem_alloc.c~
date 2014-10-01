@@ -1,15 +1,17 @@
-#include "mem_alloc.h"
+	#include "mem_alloc.h"
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 
 /* memory */
+# define MEMORY_SIZE = 512
 char memory[MEMORY_SIZE]; 
 
 /* Structure declaration for a free block */
 typedef struct free_block{
   int size; 
   struct free_block *next; 
+  struct free_block *before;
 } free_block_s, *free_block_t; 
 
 /* Structure declaration for an occupied block */
@@ -28,7 +30,9 @@ free_block_t first_free;
 
 void memory_init(void)
 {
-  /* ... */
+	int *temp_ptr = (int*)memory;
+	*temp_ptr=MEMORY_SIZE;
+	
 }
 
 char *memory_alloc(int size)
