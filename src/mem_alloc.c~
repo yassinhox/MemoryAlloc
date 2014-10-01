@@ -11,11 +11,7 @@ char memory[MEMORY_SIZE];
 typedef struct free_block{
   int size; 
   struct free_block *next; 
-<<<<<<< HEAD
-  struct free_block *before; 
-=======
   struct free_block *before;
->>>>>>> 45213a8d4c1627edbb5327004a060aad08d4c17d
 } free_block_s, *free_block_t; 
 
 /* Structure declaration for an occupied block */
@@ -36,7 +32,6 @@ void memory_init(void)
 {
 	int *temp_ptr = (int*)memory;
 	*temp_ptr=MEMORY_SIZE;
-	free_block_t=memory;
 	
 }
 
@@ -163,7 +158,3 @@ int main(int argc, char **argv)
   return EXIT_SUCCESS;
 }
 #endif 
-
-
-
-int* tp = malloc(5*sizeof(int));
