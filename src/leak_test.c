@@ -2,7 +2,8 @@
 
 int leaking = 1;
 
-void leaking_fun(int n) {
+void leaking_fun(int n) 
+{
   void *a,*b,*c;
   if(n<0) return;
   a = malloc(5);
