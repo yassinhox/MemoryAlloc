@@ -18,25 +18,54 @@ busy_block_t first_occupied;
 
 void memory_init(void)
 {
-	int *temp_ptr = (int*)memory;
-	
-	first_free = malloc (sizeof(free_block_s));
-	first_free->size = 512-4;
-	first_free->next = NULL ; 
-	first_free->before = NULL ;
-	*temp_ptr = first_free->size; // as an interger is saved into 4 bytes
-	first_free = (free_block_t )memory;
-	
-	first_occupied = NULL;
+	first_free = malloc(sizeof(free_block_s)) ;
+	first_free->size=512-4;
+	first_free->next=NULL;
+	first_free->before=NULL;	
 	
 }
 
-//~ char *memory_alloc(int size)
-//~ {
-		//~ 
-//~ //  print_alloc_info(addr, actual_size);
- //~ 
-//~ }
+char *memory_alloc(int size)   // NOT DONE YET
+ {
+	 size=size+4;  // As we always need 4 extra bytes for the size;
+	 
+	 if (size>512)  // Requesting a big size
+	 {
+	 return NULL;
+	 }
+	 
+	 free_block_t temp =first_free;  // First case we have is that the memory is all free
+	 
+	if(size < first_free->size);
+	{
+		busy_block_t block = malloc(sizeof(busy_block_s));
+		
+		
+		
+	}
+	 
+	 while (temp->next != NULL)
+	 {
+		 if (size <= temp->size)  // means that there exist a block with the size required
+		 {
+			 if ( (size-temp->size) ==0  // means that the size of the block found is exactly the size we were looking for
+			 {
+			 free_block_s block;
+			 block->size=size;
+			 block->next=temp->next;
+			 block->before=temp->before;
+			 return (*char) temp;
+		     }
+			 
+		 }		 
+		 
+	}
+	return NULL ;  // faliure to allocate
+	 
+ 
+ // print_alloc_info(addr, actual_size);
+ 
+ }
 
 void memory_free(char *p)
 {
