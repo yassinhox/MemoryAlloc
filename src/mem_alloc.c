@@ -9,7 +9,7 @@ char memory[MEMORY_SIZE];
 
 /* Pointer to the first free block in the memory */
 free_block_t first_free; 
-busy_block_t first_occupied;
+busy_block_t first_occupied;   // We didn't have this in the definition but there is no damage using it as it is only just a pointer but haven't been yet initialized
 
 
 #define ULONG(x)((long unsigned int)(x))
@@ -18,54 +18,60 @@ busy_block_t first_occupied;
 
 void memory_init(void)
 {
-	first_free = malloc(sizeof(free_block_s)) ;
-	first_free->size=512-4;
+	// Using this method I found out the size of the free block and the busy block :  printf("%lu \n %lu " , sizeof(free_block_s),sizeof(busy_block_s));
+	// Size of the free block = 16 , Size of the busy block = 4  
+	// If you look at the definition of the malloc , you will realize that we can't use it here ! 
+	
+	
+	first_free = (free_block_t)memory ;
+	first_free->size=512-16;
 	first_free->next=NULL;
-	first_free->before=NULL;	
+	// first_free->before=NULL;	
 	
 }
 
-char *memory_alloc(int size)   // NOT DONE YET
- {
-	 size=size+4;  // As we always need 4 extra bytes for the size;
+ char *memory_alloc(int size)  
+{
+	 size=size+4;  // As we always need 4 extra bytes for the of the busy block size;
 	 
 	 if (size>512)  // Requesting a big size
 	 {
 	 return NULL;
 	 }
 	 
-	 free_block_t temp =first_free;  // First case we have is that the memory is all free
+	 free_block_t temp_before =first_free;
+	 free_block_t temp =first_free;    
 	 
-	if(size < first_free->size);
+	while(temp->next != NULL)
 	{
-		busy_block_t block = malloc(sizeof(busy_block_s));
 		
-		
-		
+		if(size <= (temp->size))
+		{
+			busy_block_t block = malloc(sizeof(busy_block_s));
+			block->size=size;
+			free_block_t freeblock = temp+block->size;
+			freeblock->next=temp->next;
+			temp_before=freeblock;
+			freeblock->size=temp->size- block->size;
+			return ((*char)temp);
+			
+			
+		}
+		else 
+		{
+			temp_before=temp;
+			temp=temp->next;
+		}
 	}
-	 
-	 while (temp->next != NULL)
-	 {
-		 if (size <= temp->size)  // means that there exist a block with the size required
-		 {
-			 if ( (size-temp->size) ==0  // means that the size of the block found is exactly the size we were looking for
-			 {
-			 free_block_s block;
-			 block->size=size;
-			 block->next=temp->next;
-			 block->before=temp->before;
-			 return (*char) temp;
-		     }
-			 
-		 }		 
-		 
-	}
-	return NULL ;  // faliure to allocate
-	 
- 
- // print_alloc_info(addr, actual_size);
- 
- }
+	return NULL;
+}
+	
+ //~ 
+ //~ // print_alloc_info(addr, actual_size);
+ //~ 
+  }
+
+
 
 void memory_free(char *p)
 {
@@ -115,7 +121,7 @@ void memory_free(char *p)
 					free_block_t tmp = malloc(sizeof(free_block_s));
 					tmp->size = next_free->size + block->size;
 					tmp->next = next_free->next;
-					tmp->before = previous_free;
+					// tmp->before = previous_free;   We don't need this line 
 					free(next_free);
 					previous_free->next = tmp;
 					free(block);					
@@ -125,7 +131,7 @@ void memory_free(char *p)
 					free_block_t tmp = malloc(sizeof(free_block_s));
 					tmp->size = block->size;
 					tmp->next = previous_free->next;
-					tmp->before = previous_free;
+					// tmp->before = previous_free;    we don't need this line also 
 					previous_free->next = tmp;
 					free(block);					
 				}	
@@ -136,7 +142,7 @@ void memory_free(char *p)
 				free_block_t tmp = malloc(sizeof(free_block_s));
 				tmp->size = block->size;
 				tmp->next = NULL;
-				tmp->before = previous_free;
+				// tmp->before = previous_free;  we don't need this line
 				previous_free->next = tmp;
 				free(block);
 			}
@@ -198,31 +204,54 @@ void memory_free(char *p)
   /* ... */
 }
 
-int validAdress(char *p)
+int validAdress(char *p) // return 0 for an invalid address and 1 for a valid 
 {
-	busy_block_t current_busy = first_occupied;
+	// Can't use this method as we don't have a pointer in the busy block.
+	//~ busy_block_t current_busy = first_occupied;
+	//~ 
+	//~ if( (busy_block_t) p < first_occupied)
+	//~ {
+		//~ return 0;
+	//~ }
+	//~ 
+	//~ while( current_busy < (busy_block_t) memory + MEMORY_SIZE)
+	//~ {
+		//~ if( current_busy == (busy_block_t) p)
+		//~ {
+			//~ return 1;
+		//~ }
+		//~ else
+		//~ {
+			//~ current_busy = current_busy->next;
+		//~ }
+	//~ }
+	//~ return 1;
 	
-	if( (busy_block_t) p < first_occupied)
+	
+	
+	free_block_t temp = first_free;
+	if ( (free_block_t)p == first_free)
 	{
 		return 0;
 	}
-	
-	while( current_busy < (busy_block_t) memory + MEMORY_SIZE)
+	while( temp < (free_block_t) memory + MEMORY_SIZE)
 	{
-		if( current_busy == (busy_block_t) p)
+		if ( ((free_block_t)p >= temp ) && ( (free_block_t)p < (temp+temp->size) )   )
 		{
-			return 1;
+			return 0 ; // Address is in the empty block
 		}
-		else
+		else 
 		{
-			current_busy = current_busy->next;
+				temp=temp->next;
 		}
 	}
 	return 1;
+
 }
 
 free_block_t getPreviousFreeBlock(busy_block_t block)
 {
+	// Correct method
 	free_block_t result = first_free;
 	
 	if( (free_block_t) block < first_free)
@@ -230,19 +259,13 @@ free_block_t getPreviousFreeBlock(busy_block_t block)
 		return NULL;
 	} 
 	
-	while(result < (free_block_t) memory + MEMORY_SIZE)
+	while(( result < (free_block_t) memory + MEMORY_SIZE) && ( result < (free_block_t) block ))
 	{
-		if( result > (free_block_t) block )
-		{
-			break;
-		}
-		else
-		{
+		
 			result = result->next;
-		}
+		
 	}
 	
-	result = result->before;
 	return result;	
 }
 
@@ -362,6 +385,8 @@ int main(int argc, char **argv)
   //~ memory_free(a);
 //~ 
   //~ printf("%lu\n",(long unsigned int) (memory_alloc(9)));
+  printf("%lu \n %lu " , sizeof(free_block_s),sizeof(busy_block_s));
+  
   return 1;
   //~ return EXIT_SUCCESS;
 }

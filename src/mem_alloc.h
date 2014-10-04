@@ -5,18 +5,18 @@
 typedef struct free_block{
   int size; 
   struct free_block *next;
-  struct free_block *before;
+//   struct free_block *before;  I commented this definition as it wasn't in the original one 
 } free_block_s, *free_block_t; 
 
 /* Structure declaration for an occupied block */
 typedef struct busy_block{
   int size;
-  struct busy_block *next;
+ //  struct busy_block *next;   I commented this definition as it wasn't in the original one 
 } busy_block_s, *busy_block_t; 
 
 /* Allocator functions, to be implemented in mem_alloc.c */
 void memory_init(void); 
-char *memory_alloc(int size); 
+char *memory_alloc(int size); 	
 void memory_free(char *p);
 
 /* Logging functions */
