@@ -4,6 +4,7 @@
 #include <string.h>
 
 /* memory */
+# define MEMORY_SIZE 512
 char memory[MEMORY_SIZE]; 
 
 
@@ -33,27 +34,54 @@ void memory_init(void)
  char *memory_alloc(int size)  
 {
 	 size=size+4;  // As we always need 4 extra bytes for the of the busy block size;
-	 
+	 printf("allocating memory of size %d \n ", size);
 	 if (size>512)  // Requesting a big size
 	 {
+		 printf("Size is greater than the memory , can't allocate \n");
 	 return NULL;
 	 }
 	 
-	 free_block_t temp_before =first_free;
-	 free_block_t temp =first_free;    
+	   
+	 printf("Initialization of temp & temp_before \n");
 	 
-	while(temp->next != NULL)
+	 if ( (first_free->next == NULL) ) // We only have one free block , which is the initialization case 
+	 {
+	
+		
+		    busy_block_t block = malloc(sizeof(busy_block_s));
+			block->size=size;
+			free_block_t freeblock= malloc(sizeof(free_block_s));
+				
+			
+			freeblock = first_free+block->size;
+			freeblock->next=NULL;
+			freeblock->size=first_free->size- block->size;
+			free(first_free);
+			first_free=freeblock;
+			return ((char*)block);
+			printf("First allocation after initialization is complete \n");
+ 
+		 
+	
+	 free_block_t temp =first_free; 
+	 free_block_t temp_before =temp;
+	
+	temp=temp->next;  // Move the pointer one step forward
+	 
+	do
 	{
 		
 		if(size <= (temp->size))
 		{
 			busy_block_t block = malloc(sizeof(busy_block_s));
 			block->size=size;
-			free_block_t freeblock = temp+block->size;
+			free_block_t freeblock= malloc(sizeof(free_block_s));
+			freeblock = temp+block->size;
 			freeblock->next=temp->next;
-			temp_before=freeblock;
+			temp_before->next=freeblock;
 			freeblock->size=temp->size- block->size;
-			return ((*char)temp);
+			free(temp);
+			return ((char*)block);
 			
 			
 		}
@@ -62,20 +90,20 @@ void memory_init(void)
 			temp_before=temp;
 			temp=temp->next;
 		}
-	}
+	} while(temp->next != NULL || temp_before->next != NULL);
 	return NULL;
-}
+
 	
- //~ 
- //~ // print_alloc_info(addr, actual_size);
- //~ 
-  }
+ 
+// print_alloc_info(addr, actual_size);
+ 
+}
 
 
 
 void memory_free(char *p)
 {
-	//print_free_info(p); 
+	print_free_info(p); 
 	
 	if (validAdress(p) == 0)
 	{
@@ -168,7 +196,7 @@ void memory_free(char *p)
 			else
 			{	
 				free_block_t temp = malloc(sizeof(free_block_s));
-				temp->size=block->size+first_free->size;
+				temp->size=block->size+first_free->size;	
 				temp->next=first_free;
 				free(first_free);  // Because we want to have on Contigious free block
 				first_free=temp;
@@ -315,79 +343,86 @@ void print_free_blocks(void)
   for(current = first_free; current != NULL; current = current->next)
     fprintf(stderr, "Free block at address %lu, size %u\n", ULONG((char*)current - memory), current->size);
 }
-//~ 
-//~ char *heap_base(void) 
-//~ {
-  //~ return memory;
-//~ }
-//~ 
-//~ 
-//~ void *malloc(size_t size)
-//~ {
-  //~ static int init_flag = 0; 
-  //~ if(!init_flag)
-  //~ {
-    //~ init_flag = 1; 
-    //~ memory_init(); 
-    //~ //print_info(); 
-  //~ }      
-  //~ return (void*)memory_alloc((size_t)size); 
-//~ }
 
-//~ void free(void *p)
-//~ {
-  //~ if (p == NULL) return;
-  //~ memory_free((char*)p); 
-  //~ print_free_blocks();
-//~ }
+char *heap_base(void) 
+{
+  return memory;
+}
 
-//~ void *realloc(void *ptr, size_t size)
-//~ {
-  //~ if(ptr == NULL)
-    //~ return memory_alloc(size); 
-  //~ busy_block_t bb = ((busy_block_t)ptr) - 1; 
-  //~ printf("Reallocating %d bytes to %d\n", bb->size - (int)sizeof(busy_block_s), (int)size); 
-  //~ if(size <= bb->size - sizeof(busy_block_s))
-    //~ return ptr; 
+
+void *malloc(size_t size)
+{
+  static int init_flag = 0; 
+  if(!init_flag)
+  {
+    init_flag = 1; 
+    memory_init(); 
+    //print_info(); 
+  }      
+  return (void*)memory_alloc((size_t)size); 
+}
 //~ 
-  //~ char *new = memory_alloc(size); 
-  //~ memcpy(new, (void*)(bb+1), bb->size - sizeof(busy_block_s) ); 
-  //~ memory_free((char*)(bb+1)); 
-  //~ return (void*)(new); 
-//~ }
+void free(void *p)
+{
+  if (p == NULL) return;
+  memory_free((char*)p); 
+  print_free_blocks();
+}
+//~ 
+void *realloc(void *ptr, size_t size)
+{
+  if(ptr == NULL)
+    return memory_alloc(size); 
+  busy_block_t bb = ((busy_block_t)ptr) - 1; 
+  printf("Reallocating %d bytes to %d\n", bb->size - (int)sizeof(busy_block_s), (int)size); 
+  if(size <= bb->size - sizeof(busy_block_s))
+    return ptr; 
 
+  char *new = memory_alloc(size); 
+  memcpy(new, (void*)(bb+1), bb->size - sizeof(busy_block_s) ); 
+  memory_free((char*)(bb+1)); 
+  return (void*)(new); 
+}
+//~ 
 
 #ifdef MAIN
 int main(int argc, char **argv)
 {
 
-  /* The main can be changed, it is *not* involved in tests */
-  //~ memory_init();
-  //~ print_info(); 
-  //~ print_free_blocks();
-  //~ int i ; 
-  //~ for( i = 0; i < 10; i++)
-  //~ {
-    //~ char *b = memory_alloc(rand()%8);
-    //~ memory_free(b); 
-    //~ print_free_blocks();
-  //~ }
-//~ 
-//~ 
-//~ 
-//~ 
-  //~ char * a = memory_alloc(15);
-  //~ a=realloc(a, 20); 
-  //~ memory_free(a);
-//~ 
-//~ 
-  //~ a = memory_alloc(10);
-  //~ memory_free(a);
-//~ 
-  //~ printf("%lu\n",(long unsigned int) (memory_alloc(9)));
-  printf("%lu \n %lu " , sizeof(free_block_s),sizeof(busy_block_s));
-  
-  return 1;
-  //~ return EXIT_SUCCESS;
+  //~ /* The main can be changed, it is *not* involved in tests */
+  memory_init();
+  print_info(); 
+  printf(" First print \n");
+  print_free_blocks();
+   printf(" Second  print \n");
+  int i ; 
+  for( i = 0; i < 10; i++)
+  {
+    char *b = memory_alloc(rand()%8);
+      printf(" Allocate %d \n",i);
+    memory_free(b); 
+       printf(" Memory is free  %d \n",i);
+
+    print_free_blocks();
+  }
+
+	
+
+
+  char * a = memory_alloc(15);
+  a=realloc(a, 20); 
+  memory_free(a);
+
+
+  a = memory_alloc(10);
+  memory_free(a);
+
+
+	printf("before last \n"); 
+  printf("%lu\n",(long unsigned int) (memory_alloc(9)));
+  //~ printf("%lu \n %lu " , sizeof(free_block_s),sizeof(busy_block_s));
+  //~ 
+  //~ return 1;
+  return EXIT_SUCCESS;
 }
 #endif 

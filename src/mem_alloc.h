@@ -29,9 +29,9 @@ int validAdress(char *p);
 free_block_t getPreviousFreeBlock(busy_block_t block);
 
 #include <stdlib.h>
-//void *malloc(size_t size); 
-//void free(void *p); 
-//void *realloc(void *ptr, size_t size); 
+//~ void *malloc(size_t size); 
+//~ void free(void *p); 
+//~ void *realloc(void *ptr, size_t size); 
 
 
 #endif 	    /* !_MEM_ALLOC_H_ */
