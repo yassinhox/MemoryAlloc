@@ -4,7 +4,6 @@
 #include <string.h>
 
 /* memory */
-# define MEMORY_SIZE 512
 char memory[MEMORY_SIZE]; 
 
 
@@ -25,42 +24,45 @@ void memory_init(void)
 	
 	
 	first_free = (free_block_t)memory ;
-	first_free->size=512-16;
+	first_free->size=MEMORY_SIZE;
 	first_free->next=NULL;
+	print_free_blocks();
 	// first_free->before=NULL;	
 	
 }
 
  char *memory_alloc(int size)  
 {
-	 size=size+4;  // As we always need 4 extra bytes for the of the busy block size;
-	 printf("allocating memory of size %d \n ", size);
-	 if (size>512)  // Requesting a big size
+	 size=size+sizeof(busy_block_s);  // As we always need 4 extra bytes for the of the busy block size;
+	 // printf("allocating memory of size %d \n ", size);
+	 if (size>MEMORY_SIZE)  // Requesting a big size
 	 {
 		 printf("Size is greater than the memory , can't allocate \n");
 	 return NULL;
 	 }
 	 
 	   
-	 printf("Initialization of temp & temp_before \n");
+	 // printf("Initialization of temp & temp_before\n");
 	 
 	 if ( (first_free->next == NULL) ) // We only have one free block , which is the initialization case 
 	 {
 	
-		
-		    busy_block_t block = malloc(sizeof(busy_block_s));
-			block->size=size;
-			free_block_t freeblock= malloc(sizeof(free_block_s));
-				
-			
-			freeblock = first_free+block->size;
-			freeblock->next=NULL;
-			freeblock->size=first_free->size- block->size;
-			free(first_free);
-			first_free=freeblock;
-			return ((char*)block);
-			printf("First allocation after initialization is complete \n");
- 
+		  busy_block_t block = (busy_block_t) first_free;
+		  block->size =size;
+		  
+		    //~ busy_block_t block = (busy_block_t)malloc(sizeof(busy_block_s));
+			//~ block->size=size;
+			//~ free_block_t freeblock= (free_block_t)malloc(sizeof(free_block_s));
+				//~ 
+			//~ 
+			//~ freeblock = first_free+block->size;
+			//~ freeblock->next=NULL;
+			//~ freeblock->size=first_free->size- block->size;
+			//~ free(first_free);
+			//~ first_free=freeblock;
+			//~ return ((char*)block);
+			//~ printf("First allocation after initialization is complete \n");
+ }
 		 
 	
 	 free_block_t temp =first_free; 
@@ -73,9 +75,9 @@ void memory_init(void)
 		
 		if(size <= (temp->size))
 		{
-			busy_block_t block = malloc(sizeof(busy_block_s));
+			busy_block_t block = (busy_block_t)malloc(sizeof(busy_block_s));
 			block->size=size;
-			free_block_t freeblock= malloc(sizeof(free_block_s));
+			free_block_t freeblock= (free_block_t)malloc(sizeof(free_block_s));
 			freeblock = temp+block->size;
 			freeblock->next=temp->next;
 			temp_before->next=freeblock;
@@ -92,18 +94,15 @@ void memory_init(void)
 		}
 	} while(temp->next != NULL || temp_before->next != NULL);
 	return NULL;
-
-	
  
 // print_alloc_info(addr, actual_size);
- 
-}
+ }
 
 
 
 void memory_free(char *p)
 {
-	print_free_info(p); 
+//	print_free_info(p); 
 	
 	if (validAdress(p) == 0)
 	{
@@ -146,7 +145,7 @@ void memory_free(char *p)
 			{				
 				if ( block ==  (busy_block_t)next_free - (block->size))  // next free block is Contigious
 				{
-					free_block_t tmp = malloc(sizeof(free_block_s));
+					free_block_t tmp = (free_block_t)malloc(sizeof(free_block_s));
 					tmp->size = next_free->size + block->size;
 					tmp->next = next_free->next;
 					// tmp->before = previous_free;   We don't need this line 
@@ -156,7 +155,7 @@ void memory_free(char *p)
 				} 
 				else    												 // previous is not contiguous and the next one is not 
 				{
-					free_block_t tmp = malloc(sizeof(free_block_s));
+					free_block_t tmp = (free_block_t)malloc(sizeof(free_block_s));
 					tmp->size = block->size;
 					tmp->next = previous_free->next;
 					// tmp->before = previous_free;    we don't need this line also 
@@ -167,7 +166,7 @@ void memory_free(char *p)
 			
 			else if(next_free == NULL)  						// There is no next free block 
 			{
-				free_block_t tmp = malloc(sizeof(free_block_s));
+				free_block_t tmp = (free_block_t)malloc(sizeof(free_block_s));
 				tmp->size = block->size;
 				tmp->next = NULL;
 				// tmp->before = previous_free;  we don't need this line
@@ -185,7 +184,7 @@ void memory_free(char *p)
 			
 			if ( block == (busy_block_t) memory)     // and the busy block is the first block in the memory
 			{
-					free_block_t temp = malloc(sizeof(free_block_s));
+					free_block_t temp = (free_block_t)malloc(sizeof(free_block_s));
 					temp->size=block->size+first_free->size;
 					temp->next=first_free;
 					free(first_free);  // Because we want to have on Contigious free block
@@ -195,7 +194,7 @@ void memory_free(char *p)
 			}
 			else
 			{	
-				free_block_t temp = malloc(sizeof(free_block_s));
+				free_block_t temp = (free_block_t)malloc(sizeof(free_block_s));
 				temp->size=block->size+first_free->size;	
 				temp->next=first_free;
 				free(first_free);  // Because we want to have on Contigious free block
@@ -207,7 +206,7 @@ void memory_free(char *p)
 		{
 			if (block == (busy_block_t)memory)   // The block is the first block of the memory and there is no Contigious free block
 			{
-				free_block_t temp = malloc(sizeof(free_block_s));
+				free_block_t temp = (free_block_t)malloc(sizeof(free_block_s));
 				temp->size= block->size;
 				temp->next=first_free;
 				first_free=temp;
@@ -216,7 +215,7 @@ void memory_free(char *p)
 			
 			else 
 			{
-				free_block_t temp = malloc(sizeof(free_block_s));
+				free_block_t temp = (free_block_t)malloc(sizeof(free_block_s));
 				temp->size=block->size;
 				temp->next=first_free;
 				free(block);
