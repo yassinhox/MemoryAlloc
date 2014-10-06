@@ -33,10 +33,12 @@ void memory_init(void)
 
  char *memory_alloc(int size)  
 {
-	int temp_size=0;
+	 int temp_size=0;
+	
+	// printf("Size before the busy block %d \n ", size);
 	 size=size+sizeof(busy_block_s);  
 	 
-	  printf("allocating memory of size %d \n ", size);
+	 // printf("allocating memory of size %d \n ", size);
 	 
 	 if (size>MEMORY_SIZE)  // Requesting a big size
 	 {
@@ -44,31 +46,7 @@ void memory_init(void)
 	 return NULL;
 	 }  
 	 	 
-	 if ( first_free == (free_block_t) memory ) // We only have one free block , which is the initialization case 
-	 {
-	       
-	       printf("First case : All the memory is empty \n");
-	
-		  busy_block_t block = (busy_block_t) first_free;
-		  temp_size= first_free->size;
-		  block->size =size;
-		  
-		  free_block_t node = (free_block_t) ((char*) block + size);
-		  
-		   // printf("Busy block size : %d , first free size : %d , node size %d \n" ,block->size,first_free->size,node->size); 
-		  node->size = temp_size - block->size; 
-		
-		  node->next = NULL; 
-		  first_free=node;
-		
-		printf("Busy block size : %d , first free size : %d , node size %d \n" ,block->size,first_free->size,node->size);   
-		  printf("Allocation Succeeded address of busy %p address of empty %p \n",(char*)block,(char*)node);
-		  
-		  printf("First free at address %p \n and it's size %d \n",(char*)first_free , node->size);
-		  	return ((char*)block);
-
- }
-		 
+	 
 	
 	 free_block_t temp =first_free; 
 	 free_block_t temp_before =first_free;
@@ -81,7 +59,7 @@ void memory_init(void)
 		
 		if(size <= (temp->size))
 		{
-				printf("found the required space at address %p \n",(char*)temp);
+				//printf("found the required space at address %p \n",(char*)temp);
 				  
 				busy_block_t block = (busy_block_t) temp;
 				temp_size= first_free->size;
@@ -93,13 +71,17 @@ void memory_init(void)
 				if (i==0)
 				{
 				  first_free = node;
+				  first_free->next=NULL;
 				  
 				}
 				else 
 				{
 					temp_before=node; 
 				}
-				  printf("Allocation Succeeded address of busy %p address of empty %p \n",(char*)block,(char*)node);
+				 // printf("Allocation Succeeded address of busy %p address of empty %p \n",(char*)block,(char*)node);
+				  
+				 // printf("Busy block size : %d , Empty block size : %d \n" ,block->size,node->size);   
+		 
 					return ((char*)block);
 		}
 			
@@ -280,7 +262,7 @@ int validAdress(char *p) // return 0 for an invalid address and 1 for a valid
 	{
 		return 0;
 	}
-	while( temp < (free_block_t) memory + MEMORY_SIZE)
+	while( temp < (free_block_t) ( memory + MEMORY_SIZE ))
 	{
 		if ( ((free_block_t)p >= temp ) && ( (free_block_t)p < (temp+temp->size) )   )
 		{
@@ -410,11 +392,9 @@ int main(int argc, char **argv)
   //~ /* The main can be changed, it is *not* involved in tests */
   memory_init();
   print_info(); 
-  printf(" First print \n");
   print_free_blocks();
-   printf(" Second  print \n");
   int i ; 
-  for( i = 0; i < 10; i++)
+  for( i = 0; i < 100; i++)
   {
 	  printf(" Allocate %d  \n",i);
     char *b = memory_alloc(rand()%8);
@@ -423,7 +403,7 @@ int main(int argc, char **argv)
     //~ memory_free(b); 
        //~ printf(" Memory is free  %d \n",i);
 
-    print_free_blocks();
+  print_free_blocks();
   }
 
 	
