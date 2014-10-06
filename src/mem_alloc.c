@@ -33,66 +33,85 @@ void memory_init(void)
 
  char *memory_alloc(int size)  
 {
-	 size=size+sizeof(busy_block_s);  // As we always need 4 extra bytes for the of the busy block size;
-	 // printf("allocating memory of size %d \n ", size);
+	int temp_size=0;
+	 size=size+sizeof(busy_block_s);  
+	 
+	  printf("allocating memory of size %d \n ", size);
+	 
 	 if (size>MEMORY_SIZE)  // Requesting a big size
 	 {
 		 printf("Size is greater than the memory , can't allocate \n");
 	 return NULL;
-	 }
-	 
-	   
-	 // printf("Initialization of temp & temp_before\n");
-	 
-	 if ( (first_free->next == NULL) ) // We only have one free block , which is the initialization case 
+	 }  
+	 	 
+	 if ( first_free == (free_block_t) memory ) // We only have one free block , which is the initialization case 
 	 {
+	       
+	       printf("First case : All the memory is empty \n");
 	
 		  busy_block_t block = (busy_block_t) first_free;
+		  temp_size= first_free->size;
 		  block->size =size;
 		  
-		    //~ busy_block_t block = (busy_block_t)malloc(sizeof(busy_block_s));
-			//~ block->size=size;
-			//~ free_block_t freeblock= (free_block_t)malloc(sizeof(free_block_s));
-				//~ 
-			//~ 
-			//~ freeblock = first_free+block->size;
-			//~ freeblock->next=NULL;
-			//~ freeblock->size=first_free->size- block->size;
-			//~ free(first_free);
-			//~ first_free=freeblock;
-			//~ return ((char*)block);
-			//~ printf("First allocation after initialization is complete \n");
+		  free_block_t node = (free_block_t) ((char*) block + size);
+		  
+		   // printf("Busy block size : %d , first free size : %d , node size %d \n" ,block->size,first_free->size,node->size); 
+		  node->size = temp_size - block->size; 
+		
+		  node->next = NULL; 
+		  first_free=node;
+		
+		printf("Busy block size : %d , first free size : %d , node size %d \n" ,block->size,first_free->size,node->size);   
+		  printf("Allocation Succeeded address of busy %p address of empty %p \n",(char*)block,(char*)node);
+		  
+		  printf("First free at address %p \n and it's size %d \n",(char*)first_free , node->size);
+		  	return ((char*)block);
+
  }
 		 
 	
 	 free_block_t temp =first_free; 
-	 free_block_t temp_before =temp;
-	
-	temp=temp->next;  // Move the pointer one step forward
+	 free_block_t temp_before =first_free;
+	 
+	 
+	int i=0;
 	 
 	do
 	{
 		
 		if(size <= (temp->size))
 		{
-			busy_block_t block = (busy_block_t)malloc(sizeof(busy_block_s));
-			block->size=size;
-			free_block_t freeblock= (free_block_t)malloc(sizeof(free_block_s));
-			freeblock = temp+block->size;
-			freeblock->next=temp->next;
-			temp_before->next=freeblock;
-			freeblock->size=temp->size- block->size;
-			free(temp);
-			return ((char*)block);
-			
-			
+				printf("found the required space at address %p \n",(char*)temp);
+				  
+				busy_block_t block = (busy_block_t) temp;
+				temp_size= first_free->size;
+				block->size =size;
+				  
+	     		free_block_t node = (free_block_t) ((char*) block + size);
+				node->size = temp_size - block->size; 
+				node->next = temp->next;
+				if (i==0)
+				{
+				  first_free = node;
+				  
+				}
+				else 
+				{
+					temp_before=node; 
+				}
+				  printf("Allocation Succeeded address of busy %p address of empty %p \n",(char*)block,(char*)node);
+					return ((char*)block);
 		}
+			
+			
 		else 
 		{
 			temp_before=temp;
 			temp=temp->next;
+			i++;
 		}
 	} while(temp->next != NULL || temp_before->next != NULL);
+	printf("No Memory Available");
 	return NULL;
  
 // print_alloc_info(addr, actual_size);
@@ -397,28 +416,30 @@ int main(int argc, char **argv)
   int i ; 
   for( i = 0; i < 10; i++)
   {
+	  printf(" Allocate %d  \n",i);
     char *b = memory_alloc(rand()%8);
-      printf(" Allocate %d \n",i);
-    memory_free(b); 
-       printf(" Memory is free  %d \n",i);
+    printf(" Allocated Address %p  \n",b);
+    
+    //~ memory_free(b); 
+       //~ printf(" Memory is free  %d \n",i);
 
     print_free_blocks();
   }
 
 	
 
-
-  char * a = memory_alloc(15);
-  a=realloc(a, 20); 
-  memory_free(a);
-
-
-  a = memory_alloc(10);
-  memory_free(a);
-
-
-	printf("before last \n"); 
-  printf("%lu\n",(long unsigned int) (memory_alloc(9)));
+//~ 
+  //~ char * a = memory_alloc(15);
+  //~ a=realloc(a, 20); 
+  //~ memory_free(a);
+//~ 
+//~ 
+  //~ a = memory_alloc(10);
+  //~ memory_free(a);
+//~ 
+//~ 
+	//~ printf("before last \n"); 
+  //~ printf("%lu\n",(long unsigned int) (memory_alloc(9)));
   //~ printf("%lu \n %lu " , sizeof(free_block_s),sizeof(busy_block_s));
   //~ 
   //~ return 1;
